@@ -109,10 +109,10 @@ and visualizes them in a live Grafana dashboard.
 
 ## Anomaly Types Detected
 
-- 🔴 **LARGE_TRANSACTION** — Suspicious transaction amount
-- 🔴 **SILENT_STREAM** — No messages for 60+ seconds  
-- 🟡 **RATE_DROP** — Message rate drops 70%+ suddenly
-- 🟡 **SCHEMA_DRIFT** — Upstream schema change breaks consumers
+- 🔴 **LARGE_TRANSACTION** - Suspicious transaction amount
+- 🔴 **SILENT_STREAM** - No messages for 60+ seconds  
+- 🟡 **RATE_DROP** - Message rate drops 70%+ suddenly
+- 🟡 **SCHEMA_DRIFT** - Upstream schema change breaks consumers
 
 ---
 
@@ -188,7 +188,7 @@ Step 4/4 - NarratorAgent writing report...
 
 ## Building in Public
 
-I'm building StreamSentinel in public on LinkedIn.
+I am building StreamSentinel in public on LinkedIn.
 Follow the journey: [Neelam Borse](https://www.linkedin.com/in/gauriborse/)
 
 ---
