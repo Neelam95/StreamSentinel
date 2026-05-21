@@ -1,4 +1,10 @@
-# StreamSentinel 🚨
+Perfect! Now:
+
+Press Cmd + A to select everything
+Press Delete to clear it all
+Paste this complete updated README:
+
+markdown# StreamSentinel 🚨
 
 > An agentic AI system that monitors real-time Kafka streams, 
 > detects anomalies autonomously, and either fixes them or 
@@ -35,22 +41,20 @@ them automatically or wake up the right person with full context.
 ---
 
 ## Architecture
-
-```
 Live Kafka Stream
-      ↓
+↓
 WatcherAgent    → detects anomaly
-      ↓
+↓
 DiagnosisAgent  → LLM explains why
-      ↓
+↓
 BlastRadiusAgent → scores impact LOW/MEDIUM/HIGH
-      ↓
+↓
 RemediationAgent → auto-fix or escalate
-      ↓
+↓
 NarratorAgent   → writes incident report
-      ↓
+↓
 Back to watching...
-```
+
 ---
 
 ## Key Design Decisions
@@ -77,8 +81,6 @@ The system gets smarter over time.
 ---
 
 ## Tech Stack
-
-```
 Streaming:      Apache Kafka + Schema Registry
 AI Agents:      LangGraph + Llama 3.2 (Ollama — free, local)
 Memory:         pgvector + PostgreSQL
@@ -87,7 +89,25 @@ API:            FastAPI
 Infrastructure: Docker + Docker Compose
 Cloud:          AWS EC2
 Languages:      Python, Java
-```
+
+---
+
+## Observability
+
+StreamSentinel exposes real-time metrics via Prometheus
+and visualizes them in a live Grafana dashboard.
+
+**Metrics tracked:**
+
+| Metric | What it measures |
+|--------|-----------------|
+| `streamsentinel_messages_total` | Messages processed per topic |
+| `streamsentinel_anomalies_total` | Anomalies detected by type and severity |
+| `streamsentinel_pipeline_duration_seconds` | Full pipeline processing time (MTTD) |
+| `streamsentinel_active_anomalies` | Currently active anomalies |
+| `streamsentinel_remediations_total` | Auto-remediations vs escalations |
+
+**View live dashboard:** http://localhost:3000
 
 ---
 
@@ -124,7 +144,7 @@ Languages:      Python, Java
 git clone https://github.com/Neelam95/StreamSentinel.git
 cd StreamSentinel
 
-# Start Kafka infrastructure
+# Start Kafka + Prometheus + Grafana
 docker-compose up -d
 
 # Install dependencies
@@ -137,32 +157,30 @@ ollama pull llama3.2
 python main.py
 ```
 
+### View the dashboard
+
+Open **http://localhost:3000** in your browser.
+- Username: `admin`
+- Password: `streamsentinel`
+
 ---
 
 ## Sample Output
-
-```
 🔴🔴🔴 ANOMALY #1 — FULL PIPELINE STARTING
-
 Step 1/4 — DiagnosisAgent diagnosing...
 🧠 AI DIAGNOSIS COMPLETE
-   Root cause: Misconfigured payment gateway
-   Business impact: Regulatory exposure risk
-
+Root cause: Misconfigured payment gateway
+Business impact: Regulatory exposure risk
 Step 2/4 — BlastRadiusAgent scoring...
 🔴 Blast Radius: HIGH
-   Affected: fraud-detection, accounting, compliance-reporting
-
+Affected: fraud-detection, accounting, compliance-reporting
 Step 3/4 — RemediationAgent taking action...
 🔴 HUMAN ESCALATION REQUIRED
-   ⚠️  DO NOT AUTO-FIX — HUMAN DECISION REQUIRED
-   📟 ON-CALL ENGINEER PAGED
-
+⚠️  DO NOT AUTO-FIX — HUMAN DECISION REQUIRED
+📟 ON-CALL ENGINEER PAGED
 Step 4/4 — NarratorAgent writing report...
 📰 INCIDENT POST-MORTEM REPORT saved to logs/
-
 ✅✅✅ ANOMALY #1 — PIPELINE COMPLETE
-```
 
 ---
 
