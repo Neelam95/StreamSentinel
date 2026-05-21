@@ -2,7 +2,7 @@ StreamSentinel 🚨
 
 > An agentic AI system that monitors real-time Kafka streams, 
 > detects anomalies autonomously, and either fixes them or 
-> escalates to a human — powered by 5 specialized AI agents.
+> escalates to a human - powered by 5 specialized AI agents.
 
 **Built by a senior backend engineer. No tutorials followed. 
 Production-grade architecture.**
@@ -17,7 +17,7 @@ They show up as wrong numbers in a dashboard 3 hours later.
 Or a 2am page about data that's been corrupted since midnight.
 
 StreamSentinel puts 5 AI agents on top of your Kafka streams 
-to catch failures before any human notices — and either fix 
+to catch failures before any human notices - and either fix 
 them automatically or wake up the right person with full context.
 
 ---
@@ -63,7 +63,7 @@ A graph traversal doesn't. Governance requires determinism.
 **Why Kafka-native (not Airflow)?**
 
 Every existing self-healing pipeline project wraps Airflow DAGs. 
-StreamSentinel runs directly on Kafka consumer groups — watching 
+StreamSentinel runs directly on Kafka consumer groups - watching 
 live streams, not scheduled jobs. That's architecturally different 
 and far more relevant to high-frequency financial data.
 
@@ -79,7 +79,7 @@ The system gets smarter over time.
 
 ```
 Streaming:      Apache Kafka + Schema Registry
-AI Agents:      LangGraph + Llama 3.2 (Ollama — free, local)
+AI Agents:      LangGraph + Llama 3.2 (Ollama - free, local)
 Memory:         pgvector + PostgreSQL
 Observability:  Prometheus + Grafana
 API:            FastAPI
@@ -131,7 +131,7 @@ and visualizes them in a live Grafana dashboard.
 ### Prerequisites
 - Docker + Docker Compose
 - Python 3.9+
-- Ollama (for local LLM — free, no API key needed)
+- Ollama (for local LLM - free, no API key needed)
 
 ### Run locally
 
@@ -164,26 +164,26 @@ Open **http://localhost:3000** in your browser.
 ## Sample Output
 
 ```
-🔴🔴🔴 ANOMALY #1 — FULL PIPELINE STARTING
+🔴🔴🔴 ANOMALY #1 - FULL PIPELINE STARTING
 
-Step 1/4 — DiagnosisAgent diagnosing...
+Step 1/4 - DiagnosisAgent diagnosing...
 🧠 AI DIAGNOSIS COMPLETE
    Root cause: Misconfigured payment gateway
    Business impact: Regulatory exposure risk
 
-Step 2/4 — BlastRadiusAgent scoring...
+Step 2/4 - BlastRadiusAgent scoring...
 🔴 Blast Radius: HIGH
    Affected: fraud-detection, accounting, compliance-reporting
 
-Step 3/4 — RemediationAgent taking action...
+Step 3/4 - RemediationAgent taking action...
 🔴 HUMAN ESCALATION REQUIRED
-   ⚠️  DO NOT AUTO-FIX — HUMAN DECISION REQUIRED
+   ⚠️  DO NOT AUTO-FIX - HUMAN DECISION REQUIRED
    📟 ON-CALL ENGINEER PAGED
 
-Step 4/4 — NarratorAgent writing report...
+Step 4/4 - NarratorAgent writing report...
 📰 INCIDENT POST-MORTEM REPORT saved to logs/
 
-✅✅✅ ANOMALY #1 — PIPELINE COMPLETE
+✅✅✅ ANOMALY #1 - PIPELINE COMPLETE
 ```
 
 ## Building in Public
@@ -198,6 +198,6 @@ Follow the journey: [Neelam Borse](https://www.linkedin.com/in/gauriborse/)
 **Neelam Borse** — Backend & Distributed Systems Engineer
 
 - 5+ years building production data pipelines
-- Currently @ Capital Group — Kafka, Spark, AWS at scale
+- Currently @ Capital Group - Kafka, Spark, AWS at scale
 - LinkedIn: [linkedin.com/in/gauriborse](https://www.linkedin.com/in/gauriborse/)
 - GitHub: [github.com/Neelam95](https://github.com/Neelam95)
