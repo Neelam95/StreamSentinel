@@ -35,20 +35,22 @@ them automatically or wake up the right person with full context.
 ---
 
 ## Architecture
-Live Kafka Stream
-↓
-WatcherAgent (detects anomaly)
-↓
-DiagnosisAgent (LLM explains why)
-↓
-BlastRadiusAgent (scores impact: LOW/MEDIUM/HIGH)
-↓
-RemediationAgent (auto-fix or escalate)
-↓
-NarratorAgent (writes incident report)
-↓
-Back to watching...
 
+```
+Live Kafka Stream
+      ↓
+WatcherAgent    → detects anomaly
+      ↓
+DiagnosisAgent  → LLM explains why
+      ↓
+BlastRadiusAgent → scores impact LOW/MEDIUM/HIGH
+      ↓
+RemediationAgent → auto-fix or escalate
+      ↓
+NarratorAgent   → writes incident report
+      ↓
+Back to watching...
+```
 ---
 
 ## Key Design Decisions
@@ -75,14 +77,17 @@ The system gets smarter over time.
 ---
 
 ## Tech Stack
-Streaming:     Apache Kafka + Schema Registry
-AI Agents:     LangGraph + Llama 3.2 (via Ollama — runs locally, free)
-Memory:        pgvector + PostgreSQL
-Observability: Prometheus + Grafana
-API:           FastAPI
-Infrastructure: Docker, Docker Compose
-Cloud:         AWS EC2 (deployment)
-Languages:     Python, Java
+
+```
+Streaming:      Apache Kafka + Schema Registry
+AI Agents:      LangGraph + Llama 3.2 (Ollama — free, local)
+Memory:         pgvector + PostgreSQL
+Observability:  Prometheus + Grafana
+API:            FastAPI
+Infrastructure: Docker + Docker Compose
+Cloud:          AWS EC2
+Languages:      Python, Java
+```
 
 ---
 
@@ -136,22 +141,28 @@ python main.py
 
 ## Sample Output
 
-When an anomaly is detected, StreamSentinel runs the full pipeline:
+```
 🔴🔴🔴 ANOMALY #1 — FULL PIPELINE STARTING
+
 Step 1/4 — DiagnosisAgent diagnosing...
 🧠 AI DIAGNOSIS COMPLETE
-Root cause: Misconfigured payment gateway
-Business impact: Regulatory exposure risk
+   Root cause: Misconfigured payment gateway
+   Business impact: Regulatory exposure risk
+
 Step 2/4 — BlastRadiusAgent scoring...
 🔴 Blast Radius: HIGH
-Affected: fraud-detection, accounting, compliance-reporting
+   Affected: fraud-detection, accounting, compliance-reporting
+
 Step 3/4 — RemediationAgent taking action...
 🔴 HUMAN ESCALATION REQUIRED
-⚠️ DO NOT AUTO-FIX — HUMAN DECISION REQUIRED
-📟 ON-CALL ENGINEER PAGED
+   ⚠️  DO NOT AUTO-FIX — HUMAN DECISION REQUIRED
+   📟 ON-CALL ENGINEER PAGED
+
 Step 4/4 — NarratorAgent writing report...
 📰 INCIDENT POST-MORTEM REPORT saved to logs/
+
 ✅✅✅ ANOMALY #1 — PIPELINE COMPLETE
+```
 
 ---
 
