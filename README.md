@@ -1,10 +1,4 @@
-Perfect! Now:
-
-Press Cmd + A to select everything
-Press Delete to clear it all
-Paste this complete updated README:
-
-markdown# StreamSentinel 🚨
+StreamSentinel 🚨
 
 > An agentic AI system that monitors real-time Kafka streams, 
 > detects anomalies autonomously, and either fixes them or 
