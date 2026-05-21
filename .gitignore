@@ -1,0 +1,18 @@
+# Environment variables - never upload this!
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+*.egg-info/
+
+# Logs
+logs/
+*.log
+
+# Mac
+.DS_Store
+
+# IDE
+.vscode/

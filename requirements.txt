@@ -1,0 +1,14 @@
+kafka-python
+confluent-kafka
+langchain
+langchain-anthropic
+langgraph
+anthropic
+pgvector
+psycopg2-binary
+fastapi
+uvicorn
+prometheus-client
+python-dotenv
+pydantic
+requests
