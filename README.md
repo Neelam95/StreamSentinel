@@ -191,6 +191,9 @@ Step 4/4 - NarratorAgent writing report...
 I am building StreamSentinel in public on LinkedIn.
 Follow the journey: [Neelam Borse](https://www.linkedin.com/in/gauriborse/)
 
+📝 Read the full technical deep-dive on Medium:
+[I built an agentic Kafka pipeline watchdog — here's what 5 AI agents actually do](https://medium.com/@neelamborse7/i-built-an-agentic-kafka-pipeline-watchdog-heres-what-5-ai-agents-actually-do-17b5b62b4eab)
+
 ---
 
 ## Author
