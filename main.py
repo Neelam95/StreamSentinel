@@ -9,6 +9,7 @@ from agents.blast_radius_agent import BlastRadiusAgent
 from agents.remediation_agent import RemediationAgent
 from agents.narrator_agent import NarratorAgent
 from prometheus_client import start_http_server, Counter, Histogram, Gauge
+from agents.memory_agent import MemoryAgent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,6 +26,7 @@ class StreamSentinel:
         self.blast_agent = BlastRadiusAgent()
         self.remediation_agent = RemediationAgent()
         self.narrator_agent = NarratorAgent()
+        self.memory_agent = MemoryAgent()
         self.messages_total = Counter(
             'streamsentinel_messages_total',
             'Total messages processed',
@@ -99,8 +101,18 @@ class StreamSentinel:
             f"ANOMALY #{self.total_anomalies} — FULL PIPELINE STARTING\n"
             f"{'🔴' * 20}"
         )
+        # Check memory for similar past incidents
+        similar_incidents = self.memory_agent.retrieve_similar(anomaly)
+        if similar_incidents:
+            logger.info(
+                f"🧠 Found {len(similar_incidents)} similar past incidents — "
+                f"adding context to diagnosis"
+            )
+            anomaly["similar_incidents"] = similar_incidents
+
         logger.info("Step 1/4 — DiagnosisAgent diagnosing...")
         diagnosis = self.diagnosis_agent.diagnose(anomaly)
+
         logger.info("Step 2/4 — BlastRadiusAgent scoring impact...")
         blast = self.blast_agent.calculate_blast_radius(
             topic, anomaly.get("type")
@@ -114,6 +126,12 @@ class StreamSentinel:
         self.narrator_agent.narrate(
             anomaly, diagnosis, blast, remediation
         )
+        # Store in long-term memory
+        self.memory_agent.store_incident(
+            anomaly, diagnosis, blast, remediation,
+            {"narrative": "incident processed"}
+        )
+
         duration = time.time() - start
         self.pipeline_duration.observe(duration)
         self.active_anomalies.dec()

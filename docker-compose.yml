@@ -56,3 +56,18 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=streamsentinel
     depends_on:
       - prometheus
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: streamsentinel
+      POSTGRES_USER: streamsentinel
+      POSTGRES_PASSWORD: streamsentinel
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
