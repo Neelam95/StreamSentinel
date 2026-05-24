@@ -2,7 +2,7 @@ StreamSentinel 🚨
 
 > An agentic AI system that monitors real-time Kafka streams, 
 > detects anomalies autonomously, and either fixes them or 
-> escalates to a human - powered by 5 specialized AI agents.
+> escalates to a human - powered by 6 specialized AI agents.
 
 **Built by a senior backend engineer. No tutorials followed. 
 Production-grade architecture.**
