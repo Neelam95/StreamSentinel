@@ -22,7 +22,7 @@ them automatically or wake up the right person with full context.
 
 ---
 
-## The 5 Agents
+## The 6 Agents
 
 | Agent | Role | Tech |
 |-------|------|------|
@@ -31,6 +31,7 @@ them automatically or wake up the right person with full context.
 | **BlastRadiusAgent** | Scores downstream impact deterministically | Python, graph traversal |
 | **RemediationAgent** | Auto-fixes LOW/MEDIUM, escalates HIGH to human | Python |
 | **NarratorAgent** | Writes plain-English incident post-mortem | Llama 3.2, Markdown |
+| **MemoryAgent** | Stores incidents in pgvector, retrieves similar past incidents as context | pgvector PostgreSQL |
 
 ---
 
