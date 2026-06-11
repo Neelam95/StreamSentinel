@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import requests
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime
 
 logging.basicConfig(
@@ -91,9 +92,7 @@ Write like you're explaining to a smart non-engineer."""
 
     def ask_ai(self, prompt: str) -> str:
         """Send the full incident context to AI for narration"""
-        try:
-            logger.info("✍️ NarratorAgent writing incident report...")
-            
+        def _call_ollama():
             response = requests.post(
                 self.ollama_url,
                 json={
@@ -103,12 +102,19 @@ Write like you're explaining to a smart non-engineer."""
                 },
                 timeout=120
             )
-            
             if response.status_code == 200:
                 return response.json().get("response", "No response")
             else:
                 return f"AI unavailable: {response.status_code}"
-                
+
+        try:
+            logger.info("✍️ NarratorAgent writing incident report...")
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_call_ollama)
+                return future.result(timeout=125)
+        except TimeoutError:
+            logger.error("Narrative generation timed out")
+            return "Narrative generation timed out"
         except Exception as e:
             logger.error(f"Failed to reach AI: {e}")
             return "Narrative generation unavailable"

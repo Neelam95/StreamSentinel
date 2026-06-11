@@ -2,6 +2,7 @@ import time
 import json
 import logging
 import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 from kafka import KafkaConsumer
 from agents.diagnosis_agent import DiagnosisAgent
@@ -108,7 +109,7 @@ class StreamSentinel:
                 f"🧠 Found {len(similar_incidents)} similar past incidents — "
                 f"adding context to diagnosis"
             )
-            anomaly["similar_incidents"] = similar_incidents
+            anomaly = {**anomaly, "similar_incidents": similar_incidents}
 
         logger.info("Step 1/4 — DiagnosisAgent diagnosing...")
         diagnosis = self.diagnosis_agent.diagnose(anomaly)
@@ -161,6 +162,24 @@ class StreamSentinel:
         )
         start_http_server(8000)
         logger.info("📊 Prometheus metrics at http://localhost:8000")
+
+        # Start health check endpoint on port 8001
+        class HealthHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == "/health":
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(b"OK")
+                def log_message(self, format, *args):
+                    pass
+
+        health_server = HTTPServer(("", 8001), HealthHandler)
+        health_thread = threading.Thread(
+            target=health_server.serve_forever,
+            daemon=True
+        )
+        health_thread.start()
+        logger.info("❤️ Health check at http://localhost:8001/health")
         if not self.connect_to_kafka():
             return
         status_thread = threading.Thread(
@@ -178,11 +197,19 @@ class StreamSentinel:
                 logger.info(
                     f"📨 Message #{self.total_messages} | Topic: {topic}"
                 )
-                anomaly = self.detect_anomaly(value, topic)
-                if anomaly:
-                    self.handle_anomaly(anomaly)
+                try:
+                    anomaly = self.detect_anomaly(value, topic)
+                    if anomaly:
+                        self.handle_anomaly(anomaly)
+                except Exception as e:
+                    logger.error(
+                        f"❌ Failed to process message from topic {topic}: {e} "
+                        f"— message skipped, pipeline continues"
+                    )
         except KeyboardInterrupt:
-            logger.info("StreamSentinel stopped")
+            logger.info("⏳ Shutdown signal received — waiting for current pipeline to complete...")
+            self.consumer.close()
+            logger.info("✅ StreamSentinel stopped gracefully")
         finally:
             uptime = (datetime.utcnow() - self.start_time).seconds
             logger.info(

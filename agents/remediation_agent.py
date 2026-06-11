@@ -23,6 +23,7 @@ class RemediationAgent:
     def __init__(self):
         self.remediations = []
         self.escalations = []
+        self.max_history = 100
         logger.info("RemediationAgent initialized")
     
     def remediate(self, anomaly: dict, blast_assessment: dict) -> dict:
@@ -79,6 +80,8 @@ class RemediationAgent:
         }
         
         self.remediations.append(result)
+        if len(self.remediations) > self.max_history:
+            self.remediations.pop(0)
         
         emoji = "🟡" if notify else "🟢"
         
@@ -125,6 +128,8 @@ class RemediationAgent:
         }
         
         self.escalations.append(escalation)
+        if len(self.escalations) > self.max_history:
+            self.escalations.pop(0)
         
         logger.warning(
             f"\n{'='*55}\n"

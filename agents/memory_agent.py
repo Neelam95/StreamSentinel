@@ -1,8 +1,10 @@
+import os
 import json
 import logging
 from datetime import datetime
 from typing import Optional
 import requests
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 from sqlalchemy import create_engine, text
 from pgvector.sqlalchemy import Vector
@@ -48,9 +50,9 @@ class MemoryAgent:
     """
 
     def __init__(self):
-        self.db_url = (
-            "postgresql://streamsentinel:streamsentinel"
-            "@localhost:5432/streamsentinel"
+        self.db_url = os.getenv(
+            "DATABASE_URL",
+            "postgresql://streamsentinel:streamsentinel@localhost:5432/streamsentinel"
         )
         self.ollama_url = "http://localhost:11434/api/embeddings"
         self.model = "llama3.2"
@@ -80,9 +82,9 @@ class MemoryAgent:
     def get_embedding(self, text_content: str) -> Optional[list]:
         """
         Convert text to a vector embedding using Llama 3.2.
-        This is how we turn an incident into a searchable memory.
+        Runs in a separate thread to avoid blocking the main pipeline.
         """
-        try:
+        def _call_ollama():
             response = requests.post(
                 self.ollama_url,
                 json={
@@ -93,6 +95,14 @@ class MemoryAgent:
             )
             if response.status_code == 200:
                 return response.json().get("embedding")
+            return None
+
+        try:
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_call_ollama)
+                return future.result(timeout=35)
+        except TimeoutError:
+            logger.error("Embedding generation timed out")
             return None
         except Exception as e:
             logger.error(f"Embedding failed: {e}")
@@ -128,7 +138,14 @@ class MemoryAgent:
             embedding = self.get_embedding(incident_text)
 
             if embedding is None:
-                logger.warning("Could not generate embedding — storing without vector")
+                logger.warning("Could not generate embedding — skipping storage")
+                return
+
+            if len(embedding) != 3072:
+                logger.error(
+                    f"Unexpected embedding dimension: {len(embedding)} — "
+                    f"expected 3072. Skipping storage."
+                )
                 return
 
             # Store in database
@@ -195,6 +212,7 @@ class MemoryAgent:
                             timestamp,
                             1 - (embedding <=> :embedding) as similarity
                         FROM incident_memories
+                        WHERE 1 - (embedding <=> :embedding) > 0.3
                         ORDER BY embedding <=> :embedding
                         LIMIT :limit
                     """),

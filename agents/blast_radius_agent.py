@@ -1,4 +1,6 @@
+import json
 import logging
+import os
 from datetime import datetime
 
 logging.basicConfig(
@@ -18,38 +20,19 @@ class BlastRadiusAgent:
     Think of it like a circuit breaker — rules based,
     fast, and predictable.
     """
-    
-    # Pipeline dependency graph
-    # Shows which systems depend on which topics
-    DEPENDENCY_GRAPH = {
-        "financial-transactions": [
-            "fraud-detection-service",
-            "accounting-service", 
-            "compliance-reporting",
-            "executive-dashboard",
-            "ml-risk-model"
-        ],
-        "trade-events": [
-            "portfolio-service",
-            "risk-analytics",
-            "regulatory-reporting"
-        ]
-    }
-    
-    # How critical each downstream service is
-    SERVICE_CRITICALITY = {
-        "fraud-detection-service": "HIGH",
-        "accounting-service": "HIGH",
-        "compliance-reporting": "HIGH",
-        "executive-dashboard": "MEDIUM",
-        "ml-risk-model": "MEDIUM",
-        "portfolio-service": "HIGH",
-        "risk-analytics": "MEDIUM",
-        "regulatory-reporting": "HIGH"
-    }
+
     
     def __init__(self):
         self.assessments = []
+        config_path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "config",
+            "service_graph.json"
+        )
+        with open(config_path) as f:
+            config = json.load(f)
+        self.DEPENDENCY_GRAPH = config["dependency_graph"]
+        self.SERVICE_CRITICALITY = config["service_criticality"]
         logger.info("BlastRadiusAgent initialized")
         logger.info("⚡ Running in DETERMINISTIC mode — no AI for governance decisions")
     

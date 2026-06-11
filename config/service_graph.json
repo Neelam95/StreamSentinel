@@ -1,0 +1,26 @@
+{
+    "dependency_graph": {
+        "financial-transactions": [
+            "fraud-detection-service",
+            "accounting-service",
+            "compliance-reporting",
+            "executive-dashboard",
+            "ml-risk-model"
+        ],
+        "trade-events": [
+            "portfolio-service",
+            "risk-analytics",
+            "regulatory-reporting"
+        ]
+    },
+    "service_criticality": {
+        "fraud-detection-service": "HIGH",
+        "accounting-service": "HIGH",
+        "compliance-reporting": "HIGH",
+        "executive-dashboard": "MEDIUM",
+        "ml-risk-model": "MEDIUM",
+        "portfolio-service": "MEDIUM",
+        "risk-analytics": "MEDIUM",
+        "regulatory-reporting": "HIGH"
+    }
+}

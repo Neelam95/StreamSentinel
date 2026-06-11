@@ -4,7 +4,6 @@ import logging
 from datetime import datetime
 from collections import deque
 from kafka import KafkaConsumer
-from diagnosis_agent import DiagnosisAgent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,7 +25,6 @@ class AnomalyDetector:
         self.window_seconds = 60
         self.min_expected_rate = 1  # at least 1 message per minute
         self.max_amount = 500000    # flag anything over $500K
-        self.anomalies = []
     
     def record_message(self, timestamp: float):
         """Record that a message arrived right now"""
@@ -101,7 +99,6 @@ class WatcherAgent:
         self.anomalies_detected = 0
         self.detector = AnomalyDetector()
         self.previous_rate = 0
-        self.diagnosis_agent = DiagnosisAgent()
         logger.info(f"WatcherAgent initialized - watching topics: {topics}")
     
     def connect_to_kafka(self):
@@ -137,11 +134,13 @@ class WatcherAgent:
             f"{'='*50}"
         )
     
-        # Automatically send to DiagnosisAgent
-        logger.info("🧠 Sending to DiagnosisAgent for analysis...")
-        anomaly["timestamp"] = datetime.utcnow().isoformat()
-        anomaly["topic"] = topic
-        self.diagnosis_agent.diagnose(anomaly)
+        # Return anomaly to orchestrator for pipeline handling
+        logger.info("🚨 Anomaly detected — returning to orchestrator")
+        return {
+            **anomaly,
+            "timestamp": datetime.utcnow().isoformat(),
+            "topic": topic
+        }
     
     def watch(self):
         """Main watching loop"""

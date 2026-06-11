@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,7 +42,8 @@ ANOMALY DETECTED:
 - Severity: {anomaly.get('severity', 'UNKNOWN')}
 - Details: {anomaly.get('message', 'No details')}
 - Time: {anomaly.get('timestamp', datetime.utcnow().isoformat())}
-- Additional Info: {json.dumps(anomaly.get('data', {}), indent=2)}
+- Amount Band: {'HIGH' if anomaly.get('data', {}).get('amount', 0) > 100000 else 'MEDIUM' if anomaly.get('data', {}).get('amount', 0) > 10000 else 'LOW'}
+- Currency: {anomaly.get('data', {}).get('currency', 'UNKNOWN')}
 
 Please provide:
 1. ROOT CAUSE: What most likely caused this anomaly?
@@ -54,25 +56,30 @@ who has seen this before, not like a textbook."""
 
     def ask_ai(self, prompt: str) -> str:
         """Send the anomaly to our local AI and get a diagnosis"""
-        try:
-            logger.info("🧠 Asking AI to diagnose the anomaly...")
-            
+        def _call_ollama():
             response = requests.post(
                 self.ollama_url,
                 json={
-                    "model": self.model,
-                    "prompt": prompt,
-                    "stream": False
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False
                 },
                 timeout=60
             )
-            
             if response.status_code == 200:
                 result = response.json()
                 return result.get("response", "No response from AI")
             else:
                 return f"AI unavailable: {response.status_code}"
-                
+
+        try:
+            logger.info("🧠 Asking AI to diagnose the anomaly...")
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_call_ollama)
+                return future.result(timeout=65)
+        except TimeoutError:
+            logger.error("Ollama diagnosis timed out")
+            return "AI diagnosis timed out"
         except Exception as e:
             logger.error(f"Failed to reach AI: {e}")
             return "AI diagnosis unavailable"
@@ -97,7 +104,8 @@ who has seen this before, not like a textbook."""
             "anomaly_type": anomaly.get("type"),
             "severity": anomaly.get("severity"),
             "timestamp": datetime.utcnow().isoformat(),
-            "original_anomaly": anomaly,
+            "anomaly_type": anomaly.get("type"),
+            "anomaly_severity": anomaly.get("severity"),
             "ai_diagnosis": ai_response,
             "diagnosed_by": "DiagnosisAgent-Llama3.2"
         }
