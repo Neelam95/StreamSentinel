@@ -36,24 +36,25 @@ them automatically or wake up the right person with full context.
 ---
 
 ## Architecture
+```
 Live Kafka Stream
-↓
+      ↓
 WatcherAgent     → detects anomaly
-↓
+      ↓
 MemoryAgent      → retrieves similar past incidents as context
-↓
+      ↓
 DiagnosisAgent   → local LLM explains root cause (no data leaves machine)
-↓
+      ↓
 BlastRadiusAgent → deterministic BFS scores impact LOW/MEDIUM/HIGH
-↓
+      ↓
 RemediationAgent → auto-fix or escalate to human
-↓
+      ↓
 NarratorAgent    → writes incident post-mortem to disk
-↓
+      ↓
 MemoryAgent      → stores incident for future context
-↓
+      ↓
 Back to watching...
-
+```
 ---
 
 ## Key Design Decisions
