@@ -93,13 +93,14 @@ processing or trigger a consumer group rebalance.
 ---
 
 ## Tech Stack
+```
 Streaming:      Apache Kafka + Schema Registry
 AI Agents:      Custom Python agents + Llama 3.2 (Ollama - free, local)
 Memory:         pgvector + PostgreSQL
 Observability:  Prometheus + Grafana
 Infrastructure: Docker + Docker Compose
 Languages:      Python
-
+```
 ---
 
 ## Observability
@@ -189,6 +190,7 @@ Health check: **http://localhost:8001/health**
 ---
 
 ## Sample Output
+```
 🔴🔴🔴 ANOMALY #1 - FULL PIPELINE STARTING
 Step 1/4 - DiagnosisAgent diagnosing...
 🧠 AI DIAGNOSIS COMPLETE
@@ -205,7 +207,7 @@ Step 4/4 - NarratorAgent writing report...
 📰 INCIDENT POST-MORTEM REPORT saved to logs/
 ✅✅✅ ANOMALY #1 - PIPELINE COMPLETE
 Duration: 35.65s
-
+```
 ---
 
 ## Building in Public
