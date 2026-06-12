@@ -1,4 +1,4 @@
-StreamSentinel 🚨
+# StreamSentinel 🚨
 
 > An agentic AI system that monitors real-time Kafka streams, 
 > detects anomalies autonomously, and either fixes them or 
@@ -16,7 +16,7 @@ Most pipeline failures don't announce themselves.
 They show up as wrong numbers in a dashboard 3 hours later. 
 Or a 2am page about data that's been corrupted since midnight.
 
-StreamSentinel puts 5 AI agents on top of your Kafka streams 
+StreamSentinel puts 6 AI agents on top of your Kafka streams 
 to catch failures before any human notices - and either fix 
 them automatically or wake up the right person with full context.
 
@@ -28,30 +28,33 @@ them automatically or wake up the right person with full context.
 |-------|------|------|
 | **WatcherAgent** | Monitors live Kafka streams for anomalies | Python, kafka-python |
 | **DiagnosisAgent** | Uses LLM to explain root cause in plain English | Llama 3.2, Ollama |
-| **BlastRadiusAgent** | Scores downstream impact deterministically | Python, graph traversal |
+| **BlastRadiusAgent** | Scores downstream impact deterministically | Python, BFS graph traversal |
 | **RemediationAgent** | Auto-fixes LOW/MEDIUM, escalates HIGH to human | Python |
 | **NarratorAgent** | Writes plain-English incident post-mortem | Llama 3.2, Markdown |
-| **MemoryAgent** | Stores incidents in pgvector, retrieves similar past incidents as context | pgvector PostgreSQL |
+| **MemoryAgent** | Stores incidents in pgvector, retrieves similar past incidents as context | pgvector, PostgreSQL |
 
 ---
 
 ## Architecture
-
-```
 Live Kafka Stream
-      ↓
-WatcherAgent    → detects anomaly
-      ↓
-DiagnosisAgent  → LLM explains why
-      ↓
-BlastRadiusAgent → scores impact LOW/MEDIUM/HIGH
-      ↓
-RemediationAgent → auto-fix or escalate
-      ↓
-NarratorAgent   → writes incident report
-      ↓
+↓
+WatcherAgent     → detects anomaly
+↓
+MemoryAgent      → retrieves similar past incidents as context
+↓
+DiagnosisAgent   → local LLM explains root cause (no data leaves machine)
+↓
+BlastRadiusAgent → deterministic BFS scores impact LOW/MEDIUM/HIGH
+↓
+RemediationAgent → auto-fix or escalate to human
+↓
+NarratorAgent    → writes incident post-mortem to disk
+↓
+MemoryAgent      → stores incident for future context
+↓
 Back to watching...
-```
+
+---
 
 ## Key Design Decisions
 
@@ -59,7 +62,13 @@ Back to watching...
 
 The decision of whether to auto-fix or wake up a human must be 
 predictable and auditable. LLMs introduce randomness. 
-A graph traversal doesn't. Governance requires determinism.
+A BFS graph traversal doesn't. Governance requires determinism.
+
+**Why local Ollama (no cloud API)?**
+
+Financial transaction data never leaves the machine. 
+Llama 3.2 runs locally via Ollama at localhost:11434. 
+No Anthropic API. No OpenAI API. No cloud bill. No data risk.
 
 **Why Kafka-native (not Airflow)?**
 
@@ -70,29 +79,33 @@ and far more relevant to high-frequency financial data.
 
 **Why episodic memory (pgvector)?**
 
-Agents store past incidents in a vector store. When a new anomaly 
-hits, similar past incidents are retrieved as context. 
-The system gets smarter over time.
+Agents store past incidents as vector embeddings. When a new anomaly 
+hits, similar past incidents are retrieved as context before diagnosis. 
+The system gets smarter over time without retraining.
+
+**Why ThreadPoolExecutor for Ollama calls?**
+
+Ollama inference runs in a separate thread so it never blocks the 
+Kafka consumer loop. A slow model response won't stall message 
+processing or trigger a consumer group rebalance.
 
 ---
 
 ## Tech Stack
-
-```
 Streaming:      Apache Kafka + Schema Registry
-AI Agents:      LangGraph + Llama 3.2 (Ollama - free, local)
+AI Agents:      Custom Python agents + Llama 3.2 (Ollama - free, local)
 Memory:         pgvector + PostgreSQL
 Observability:  Prometheus + Grafana
-API:            FastAPI
 Infrastructure: Docker + Docker Compose
-Cloud:          AWS EC2
-Languages:      Python, Java
-```
+Languages:      Python
+
+---
 
 ## Observability
 
 StreamSentinel exposes real-time metrics via Prometheus
 and visualizes them in a live Grafana dashboard.
+Health check endpoint available at `http://localhost:8001/health`.
 
 **Metrics tracked:**
 
@@ -123,7 +136,10 @@ and visualizes them in a live Grafana dashboard.
 |-------|---------|--------|
 | 🟢 LOW | Isolated impact | Auto-remediate silently |
 | 🟡 MEDIUM | Analytics affected | Auto-remediate + notify team |
-| 🔴 HIGH | Executive/ML systems affected | Escalate to human immediately |
+| 🔴 HIGH | Executive/ML/Compliance systems affected | Escalate to human immediately |
+
+Service dependency graph is externalized in `config/service_graph.json` — 
+no code change needed to update service topology.
 
 ---
 
@@ -154,46 +170,47 @@ ollama pull llama3.2
 python main.py
 ```
 
+### Environment variables (optional)
+
+```bash
+# Override database URL (default works for local Docker setup)
+export DATABASE_URL=postgresql://streamsentinel:streamsentinel@localhost:5432/streamsentinel
+```
+
 ### View the dashboard
 
 Open **http://localhost:3000** in your browser.
 - Username: `admin`
 - Password: `streamsentinel`
 
+Health check: **http://localhost:8001/health**
+
 ---
 
 ## Sample Output
-
-```
 🔴🔴🔴 ANOMALY #1 - FULL PIPELINE STARTING
-
 Step 1/4 - DiagnosisAgent diagnosing...
 🧠 AI DIAGNOSIS COMPLETE
-   Root cause: Misconfigured payment gateway
-   Business impact: Regulatory exposure risk
-
+Root cause: Misconfigured payment gateway
+Business impact: Regulatory exposure risk
 Step 2/4 - BlastRadiusAgent scoring...
 🔴 Blast Radius: HIGH
-   Affected: fraud-detection, accounting, compliance-reporting
-
+Affected: fraud-detection, accounting, compliance-reporting
 Step 3/4 - RemediationAgent taking action...
 🔴 HUMAN ESCALATION REQUIRED
-   ⚠️  DO NOT AUTO-FIX - HUMAN DECISION REQUIRED
-   📟 ON-CALL ENGINEER PAGED
-
+⚠️  DO NOT AUTO-FIX - HUMAN DECISION REQUIRED
+📟 ON-CALL ENGINEER PAGED
 Step 4/4 - NarratorAgent writing report...
 📰 INCIDENT POST-MORTEM REPORT saved to logs/
-
 ✅✅✅ ANOMALY #1 - PIPELINE COMPLETE
-```
+Duration: 35.65s
+
+---
 
 ## Building in Public
 
 I am building StreamSentinel in public on LinkedIn.
 Follow the journey: [Neelam Borse](https://www.linkedin.com/in/gauriborse/)
-
-📝 Read the full technical deep-dive on Medium:
-[I built an agentic Kafka pipeline watchdog — here's what 5 AI agents actually do](https://medium.com/@neelamborse7/i-built-an-agentic-kafka-pipeline-watchdog-heres-what-5-ai-agents-actually-do-17b5b62b4eab)
 
 ---
 
