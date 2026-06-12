@@ -17,7 +17,7 @@ They show up as wrong numbers in a dashboard 3 hours later.
 Or a 2am page about data that's been corrupted since midnight.
 
 StreamSentinel puts 6 AI agents on top of your Kafka streams 
-to catch failures before any human notices - and either fix 
+to catch failures before any human notices, and either fix 
 them automatically or wake up the right person with full context.
 
 ---
@@ -74,7 +74,7 @@ No Anthropic API. No OpenAI API. No cloud bill. No data risk.
 **Why Kafka-native (not Airflow)?**
 
 Every existing self-healing pipeline project wraps Airflow DAGs. 
-StreamSentinel runs directly on Kafka consumer groups - watching 
+StreamSentinel runs directly on Kafka consumer groups, watching 
 live streams, not scheduled jobs. That's architecturally different 
 and far more relevant to high-frequency financial data.
 
